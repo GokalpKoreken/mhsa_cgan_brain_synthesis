@@ -1,5 +1,8 @@
 import click
 import os
+from dotenv import load_dotenv
+load_dotenv()
+
 import numpy as np
 import pandas, researchpy
 import json
@@ -39,7 +42,7 @@ def patient_in_list(regions_patient_paths):
     return patients
         
 @click.command()
-@click.option('--dataset_path', type=str, default="/home/catarina_caldeira/Imagens/SynthRAD2023dataset/Task1/pelvis", help='Path that contains the dataset')
+@click.option('--dataset_path', type=str, default=os.getenv("DATASET_PATH"), help='Path that contains the dataset')
 @click.option('--best_models_path', type=str, default="/home/catarina_caldeira/Desktop/code/validations/saved_models/SynthRAD2023/cGAN/7layers_unet_ININ_800_lrG_0.0005_lrD_0.005_batch8_kernelD3_PL1_OSLS", help='Path where best models are') 
 @click.option('--batch_size_test', type=int, default=1, help='Size of the batches for validation')
 @click.option('--channels', type=str, default="64, 128, 256, 512, 512, 512, 512, 512", callback=parse_list, help='channels of the generator')

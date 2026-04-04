@@ -1,5 +1,8 @@
 import click
 import os
+from dotenv import load_dotenv
+load_dotenv()
+
 import numpy as np
 import time
 
@@ -64,7 +67,7 @@ def parse_list(ctx, param, value):
 @click.option(
     "--dataset_path",
     type=str,
-    default="/home/catarina_caldeira/Imagens/SynthRAD2023dataset/Task1/pelvis",
+    default=os.getenv("DATASET_PATH"),
     help="Path that has the dataset synthRAD2023",
 )
 @click.option(
@@ -126,7 +129,7 @@ def parse_list(ctx, param, value):
 @click.option(
     "--result",
     type=str,
-    default="results_lr",
+    default=os.getenv("RESULT_NAME", "results_lr"),
     help="Name of the folder to save results",
 )  # change
 @click.option(
