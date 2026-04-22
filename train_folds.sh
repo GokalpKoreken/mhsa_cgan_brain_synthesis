@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script to train MHSA-cGAN (Swin) for remaining folds
+# Script to train MHSA-cGAN for remaining folds
 # Usage: bash train_folds.sh
 
 if [ -f .env ]; then
@@ -8,7 +8,7 @@ if [ -f .env ]; then
 fi
 
 DATASET_PATH="${DATASET_PATH:-/Users/mehmetgokalpkoreken/Desktop/thesis123/msc_thesis_work/brain}"
-RESULT_NAME="${RESULT_NAME:-swin_brain_slice_v1}"
+RESULT_NAME="${RESULT_NAME:-mhsa_brain_slice_v1}"
 
 for fold in 0 1 2 4
 do
@@ -24,7 +24,7 @@ do
     --result "$RESULT_NAME" \
     --n_epochs 100 \
     --batch_size_train 32 \
-    --use_swin True
+    --use_mhsa True
     
   echo "Finished training for Fold $fold"
 done

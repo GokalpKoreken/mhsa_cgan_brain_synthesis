@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 from timm.models.swin_transformer import SwinTransformerBlock
 
-class SwinBlock(nn.Module):
+class MHSABlock(nn.Module):
     def __init__(self, dim, input_resolution, num_heads, window_size):
         super().__init__()
-        self.swin = SwinTransformerBlock(
+        self.attn = SwinTransformerBlock(
             dim=dim,
             input_resolution=input_resolution,
             num_heads=num_heads,
@@ -15,7 +15,7 @@ class SwinBlock(nn.Module):
     def forward(self, x):
         # x is (B, C, H, W)
         x = x.permute(0, 2, 3, 1) # -> (B, H, W, C)
-        x = self.swin(x)
+        x = self.attn(x)
         x = x.permute(0, 3, 1, 2) # -> (B, C, H, W)
         return x
 
@@ -55,9 +55,9 @@ class UNetUp(nn.Module):
         return x
     
 class GeneratorUNet(nn.Module):
-    def __init__(self, in_channels=1, out_channels=1, use_swin=True): # 4,1,256,256
+    def __init__(self, in_channels=1, out_channels=1, use_mhsa=True): # 4,1,256,256
         super(GeneratorUNet, self).__init__()
-        self.use_swin = use_swin
+        self.use_mhsa = use_mhsa
 
         self.down1 = UNetDown(in_channels, 64, normalize=False)        # 4, 64, 128, 128
         self.down2 = UNetDown(64, 128)                                 # 4, 128, 64, 64
@@ -76,12 +76,12 @@ class GeneratorUNet(nn.Module):
         self.up6 = UNetUp(512, 128)                                    # 4, 128, 64, 64 (concatenate with d2 -> 4, 256, 64, 64)
         self.up7 = UNetUp(256, 64)                                     # 4, 64, 128, 128 (concatenate with d1 -> 4, 128, 128, 128)
 
-        # Swin Blocks only for deep skip connections (small spatial dims = fast)
+        # MHSA Blocks only for deep skip connections (small spatial dims = fast)
         # d5: 8x8=64 tokens, d6: 4x4=16 tokens, d7: 2x2=4 tokens
-        if self.use_swin:
-            self.swin5 = SwinBlock(dim=512, input_resolution=(8, 8), num_heads=8, window_size=8)
-            self.swin6 = SwinBlock(dim=512, input_resolution=(4, 4), num_heads=8, window_size=4)
-            self.swin7 = SwinBlock(dim=512, input_resolution=(2, 2), num_heads=8, window_size=2)
+        if self.use_mhsa:
+            self.mhsa5 = MHSABlock(dim=512, input_resolution=(8, 8), num_heads=8, window_size=8)
+            self.mhsa6 = MHSABlock(dim=512, input_resolution=(4, 4), num_heads=8, window_size=4)
+            self.mhsa7 = MHSABlock(dim=512, input_resolution=(2, 2), num_heads=8, window_size=2)
 
         self.final = nn.Sequential(
             nn.Upsample(scale_factor=2),                               # 4, 128, 256, 256
@@ -91,7 +91,7 @@ class GeneratorUNet(nn.Module):
         )
 
     def forward(self, x):
-        # U-Net generator with Swin-enhanced deep skip connections
+        # U-Net generator with MHSA-enhanced deep skip connections
         d1 = self.down1(x)       # 128x128
         d2 = self.down2(d1)      # 64x64
         d3 = self.down3(d2)      # 32x32
@@ -101,10 +101,10 @@ class GeneratorUNet(nn.Module):
         d7 = self.down7(d6)      # 2x2
         d8 = self.down8(d7)      # 1x1 (bottleneck)
         
-        if self.use_swin:
-            u1 = self.up1(d8, self.swin7(d7))   # Swin on 2x2 (4 tokens)
-            u2 = self.up2(u1, self.swin6(d6))   # Swin on 4x4 (16 tokens)
-            u3 = self.up3(u2, self.swin5(d5))   # Swin on 8x8 (64 tokens)
+        if self.use_mhsa:
+            u1 = self.up1(d8, self.mhsa7(d7))   # MHSA on 2x2 (4 tokens)
+            u2 = self.up2(u1, self.mhsa6(d6))   # MHSA on 4x4 (16 tokens)
+            u3 = self.up3(u2, self.mhsa5(d5))   # MHSA on 8x8 (64 tokens)
         else:
             u1 = self.up1(d8, d7)                # Standard skip on 2x2
             u2 = self.up2(u1, d6)                # Standard skip on 4x4

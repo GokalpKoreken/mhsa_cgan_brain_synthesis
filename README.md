@@ -45,9 +45,9 @@ python -m models.cgan_model \
   --result "mhsa_brain_synthesis_v1" \
   --n_epochs 100 \
   --batch_size_train 32 \
-  --use_swin True
+  --use_mhsa True
 ```
-> **Note on Naming:** The flag `--use_swin True` activates the inclusion of our specialized deep-bottleneck attention blocks (the MHSA blocks described in the paper).
+> **Note on MHSA vs. Swin:** Unlike the full Swin Transformer, which partitions the feature map into non-overlapping local windows and requires a shifted-window mechanism to recover cross-window context, our blocks operate on the deep bottleneck feature maps ($8\times8$, $4\times4$, $2\times2$). At these resolutions the token count is already tiny (64, 16, and 4 tokens respectively), so a single window covers the entire spatial extent. There is therefore no need for window partitioning or cyclic-shift masking — the attention is computed globally over all tokens at once, making it a standard Multi-Head Self-Attention (MHSA) block that reuses the `SwinTransformerBlock` kernel purely for its efficient implementation.
 
 ### 2. Checkpoints
 Checkpoints for each fold will be saved under:
@@ -63,7 +63,7 @@ python test_ensemble.py \
   --dataset_version 23 \
   --region_filter B \
   --result "mhsa_brain_synthesis_v1" \
-  --use_swin True
+  --use_mhsa True
 ```
 
 This script will output the structural metrics evaluated specifically within the patient anatomy mask, excluding the surrounding air, to provide a clinically honest structural evaluation.

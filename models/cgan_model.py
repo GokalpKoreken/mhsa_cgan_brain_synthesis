@@ -16,7 +16,7 @@ from utils.load_data import load_images
 # Discriminator architecture model
 from models.discriminator import Discriminator
 
-# Generator architecture model (Swin-enhanced UNet)
+# Generator architecture model (MHSA-enhanced UNet)
 from models.generator import GeneratorUNet
 
 # Plotting results and Data Augmentation
@@ -220,10 +220,10 @@ def parse_list(ctx, param, value):
     help="Dataset version (23 or 25)",
 )
 @click.option(
-    "--use_swin",
+    "--use_mhsa",
     type=bool,
     default=True,
-    help="Whether to integrate Swin Blocks in deep skip connections",
+    help="Whether to integrate MHSA Blocks in deep skip connections",
 )
 @click.option(
     "--bone_weight",
@@ -259,7 +259,7 @@ def main(
     fold,
     region_filter,
     dataset_version,
-    use_swin,
+    use_mhsa,
     bone_weight
 ):
 
@@ -412,7 +412,7 @@ def main(
         # Initialize discriminator
         discriminator = Discriminator()
 
-        generator = GeneratorUNet(in_channels=1, out_channels=1, use_swin=use_swin)
+        generator = GeneratorUNet(in_channels=1, out_channels=1, use_mhsa=use_mhsa)
 
         generator = generator.to(device)
         discriminator = discriminator.to(device)
