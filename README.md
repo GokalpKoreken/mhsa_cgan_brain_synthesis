@@ -1,6 +1,8 @@
 # Enhanced U-Net Architecture with Multi-Head Self-Attention (MHSA) Blocks for Brain MRI-to-CT Synthesis
 
-![MHSA-cGAN Architecture](figures/cgan_mhsa_architecture.png)
+<p align="center">
+  <img src="figures/cgan_mhsa_architecture.png" alt="MHSA-cGAN Architecture" width="800"/>
+</p>
 
 This repository contains the PyTorch implementation of the **MHSA-enhanced U-Net cGAN**, proposed for highly accurate brain MRI-to-CT image synthesis. The architecture integrates Multi-Head Self-Attention (MHSA) blocks into the deep bottlenecks ($8\times8$, $4\times4$, $2\times2$) of a U-Net Generator to capture long-range anatomical dependencies (like the brain-skull interface) without the prohibitive $\mathcal{O}(N^2)$ computational cost of full-resolution vision transformers.
 
